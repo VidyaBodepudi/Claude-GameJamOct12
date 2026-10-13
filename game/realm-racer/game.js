@@ -275,7 +275,7 @@ function startRealm() {
   const start = pointOnTrack(0, 35);
   player = {
     x: start.x, y: start.y, a: track.segAng[0], vx: 0, vy: 0,
-    nitro: CONFIG.nitroStart, progress: 0, laps: 0, boosting: false, spin: 0, bumpCd: 0, lastRear: null, inCurrent: false,
+    nitro: CONFIG.nitroStart, progress: 0, laps: 0, boosting: false, spin: 0, immune: 0, bumpCd: 0, lastRear: null, inCurrent: false,
   };
   drones = DRONES.map((d, k) => ({ ...d, k, t: d.grid, x: 0, y: 0, a: 0, vx: 0, vy: 0, slow: 0 }));
   pickups = spread(6, 0.15, 0.93).map((f, k) => ({ i: Math.floor(track.N * f), off: k % 2 ? 45 : -45, timer: 0 }));
@@ -289,7 +289,7 @@ function startRealm() {
   junk = (realm.junk ? spread(realm.junk) : []).map((f, k) => ({ ...at(f, [-55, 10, 55, -20][k % 4]), r: 22, rot: k * 0.7 }));
   // Offset from center so there is always a gap on one side.
   spinners = (realm.spinners || []).map((f, k) => ({ ...at(f, k % 2 ? 35 : -35), len: 75, ang: k, w: k % 2 ? 2 : -2 }));
-  wells = (realm.wells || []).map((f, k) => ({ ...at(f, k % 2 ? 210 : -210), r: 400, pull: 340, core: 40 }));
+  wells = (realm.wells || []).map((f, k) => ({ ...at(f, k % 2 ? 210 : -210), r: 400, pull: 280, core: 40 }));
   stars = realm.stars
     ? Array.from({ length: 900 }, () => ({
       x: track.minX + Math.random() * (track.maxX - track.minX),
@@ -332,11 +332,13 @@ function collide(cx, cy, r, ovx = 0, ovy = 0, kick = 0) {
 }
 
 function spinOut() {
-  if (player.spin > 0) return;
+  if (player.spin > 0 || player.immune > 0) return false;
   player.spin = CONFIG.spinTime;
+  player.immune = CONFIG.spinTime + 1;
   player.vx *= 0.4;
   player.vy *= 0.4;
   play('spin');
+  return true;
 }
 
 // Wind, currents and wells move the car directly so grip can't cancel them.
@@ -350,8 +352,13 @@ function carryVelocity(p) {
   p.inCurrent = inCurrent;
   for (const w of wells) {
     const dx = w.x - p.x, dy = w.y - p.y, d = Math.hypot(dx, dy);
-    if (d < w.core) { spinOut(); play('zap'); }
-    if (d < w.r && d > 1) {
+    if (d < w.core && spinOut()) {
+      play('zap');
+      // Fling back toward the road so the core can't trap the car.
+      p.vx = (-dx / (d || 1)) * 450;
+      p.vy = (-dy / (d || 1)) * 450;
+    }
+    if (d < w.r && d > 1 && p.immune <= 0) {
       const f = w.pull * (1 - d / w.r);
       cx += (dx / d) * f;
       cy += (dy / d) * f;
@@ -372,8 +379,9 @@ function updatePlayer(dt) {
   const near = nearestSegment(p.x, p.y);
   const inMud = mud.some((m) => Math.hypot(p.x - m.x, p.y - m.y) < m.r);
   const onSlick = slick.some((s) => Math.hypot(p.x - s.x, p.y - s.y) < s.r);
-  const grip = onSlick ? CONFIG.slickGrip : realm.grip;
-  const drag = realm.drag + (near.d > CONFIG.roadHalf ? CONFIG.offTrackDrag : 0) + (inMud ? CONFIG.mudDrag : 0);
+  const grip = spinning ? 0 : onSlick ? CONFIG.slickGrip : realm.grip;
+  const drag = realm.drag + (near.d > CONFIG.roadHalf && !spinning ? CONFIG.offTrackDrag : 0) + (inMud ? CONFIG.mudDrag : 0);
+  p.immune = Math.max(0, p.immune - dt);
 
   // Steer first, then grip pulls the old velocity toward the new heading.
   const fwdPrev = p.vx * Math.cos(p.a) + p.vy * Math.sin(p.a);
