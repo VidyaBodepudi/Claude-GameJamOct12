@@ -138,17 +138,124 @@ function updateEngine() {
   if (on) engineSnd.playbackRate = Math.min(4, 0.7 + Math.hypot(player.vx, player.vy) / 300);
 }
 
+// ---------- Music (synthesized live) ----------
+// Each chord: [bass root, ...pad notes] as MIDI numbers; one chord per bar (Am, F, C, G).
+const MUSIC = { bpm: 104, vol: 0.35, chords: [[45, 57, 60, 64], [41, 57, 60, 65], [48, 55, 60, 64], [43, 55, 59, 62]] };
+let actx, musicGain, padBus, bassBus, hatBus, noiseBuf;
+let musicStep = 0;
+let musicTime = 0;
+const midiHz = (m) => 440 * 2 ** ((m - 69) / 12);
+
+function startMusic() {
+  if (actx) { if (actx.state === 'suspended' && !document.hidden) actx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  actx = new AC();
+  musicGain = actx.createGain();
+  musicGain.gain.value = muted ? 0 : MUSIC.vol;
+  musicGain.connect(actx.destination);
+
+  const padFilter = actx.createBiquadFilter();
+  padFilter.type = 'lowpass';
+  padFilter.frequency.value = 1200;
+  const echo = actx.createDelay();
+  echo.delayTime.value = (60 / MUSIC.bpm) * 0.75;
+  const feedback = actx.createGain();
+  feedback.gain.value = 0.35;
+  padBus = actx.createGain();
+  padBus.connect(padFilter);
+  padFilter.connect(musicGain);
+  padFilter.connect(echo);
+  echo.connect(feedback).connect(echo);
+  echo.connect(musicGain);
+
+  bassBus = actx.createBiquadFilter();
+  bassBus.type = 'lowpass';
+  bassBus.frequency.value = 500;
+  bassBus.connect(musicGain);
+
+  hatBus = actx.createBiquadFilter();
+  hatBus.type = 'highpass';
+  hatBus.frequency.value = 7000;
+  hatBus.connect(musicGain);
+  noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.05, actx.sampleRate);
+  const data = noiseBuf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+
+  addEventListener('visibilitychange', () => (document.hidden ? actx.suspend() : actx.resume()));
+  setInterval(scheduleMusic, 50);
+}
+
+function envelope(t, dur, vol, attack) {
+  const g = actx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + attack);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  return g;
+}
+
+function tone(type, freq, t, dur, vol, dest, attack = 0.01, detune = 0) {
+  const o = actx.createOscillator();
+  o.type = type;
+  o.frequency.value = freq;
+  o.detune.value = detune;
+  o.connect(envelope(t, dur, vol, attack)).connect(dest);
+  o.start(t);
+  o.stop(t + dur + 0.05);
+  return o;
+}
+
+function kick(t) {
+  const o = tone('sine', 120, t, 0.25, 0.5, musicGain, 0.005);
+  o.frequency.setValueAtTime(120, t);
+  o.frequency.exponentialRampToValueAtTime(40, t + 0.15);
+}
+
+function hat(t, vol) {
+  const src = actx.createBufferSource();
+  src.buffer = noiseBuf;
+  src.connect(envelope(t, 0.05, vol, 0.002)).connect(hatBus);
+  src.start(t);
+}
+
+function playStep(step, t, stepDur) {
+  const [root, ...pad] = MUSIC.chords[step >> 4];
+  const s = step % 16;
+  // Menus get just the pad and a slow bass; racing adds the driving pulse.
+  const drive = phase === 'racing' || phase === 'countdown';
+  if (s === 0) {
+    for (const m of pad) for (const cents of [-9, 9]) tone('sawtooth', midiHz(m), t, stepDur * 18, 0.03, padBus, 0.9, cents);
+  }
+  if (drive ? s % 2 === 0 : s % 8 === 0) tone('sawtooth', midiHz(root), t, drive ? stepDur * 1.6 : stepDur * 7, s === 0 ? 0.32 : 0.22, bassBus);
+  if (drive && s % 4 === 0) kick(t);
+  if (drive && s % 2 === 1) hat(t, s % 4 === 3 ? 0.12 : 0.06);
+}
+
+function scheduleMusic() {
+  const stepDur = 60 / MUSIC.bpm / 4;
+  if (musicTime < actx.currentTime) musicTime = actx.currentTime + 0.05;
+  while (musicTime < actx.currentTime + 0.3) {
+    playStep(musicStep, musicTime, stepDur);
+    musicTime += stepDur;
+    musicStep = (musicStep + 1) % (MUSIC.chords.length * 16);
+  }
+}
+
 // ---------- Input ----------
 addEventListener('keydown', (e) => {
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
   audioUnlocked = true;
+  startMusic();
   keys[e.code] = true;
   if (!e.repeat) onKey(e.code);
 });
 addEventListener('keyup', (e) => { keys[e.code] = false; });
 
 function onKey(code) {
-  if (code === 'KeyM') muted = !muted;
+  if (code === 'KeyM') {
+    muted = !muted;
+    if (musicGain) musicGain.gain.setTargetAtTime(muted ? 0 : MUSIC.vol, actx.currentTime, 0.05);
+  }
   if (code === 'Enter') {
     if (phase === 'intro') { realmIndex = 0; totalTime = 0; startRealm(); }
     else if (phase === 'realmWon') {

@@ -20,3 +20,5 @@ The WAV files in `sounds/` come from a script that generates them:
 ```sh
 python3 tools/make_sounds.py
 ```
+
+The background music is generated live in the browser with the Web Audio API, so there is no music file. Press M to mute.
