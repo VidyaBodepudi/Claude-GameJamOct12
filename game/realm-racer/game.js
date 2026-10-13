@@ -39,49 +39,49 @@ const REALMS = [
   {
     name: 'Ice Realm', hint: 'Low grip everywhere. Shiny slick patches have almost none.',
     bg: '#bcd9ea', road: '#e9f6ff', edge: '#6fa3c7', skid: 'rgba(60,110,150,0.35)',
-    grip: 2, drag: 0.4, droneSpeed: 400, length: 9000, slick: spread(6, 0.12, 0.9),
+    grip: 2, drag: 0.4, droneSpeed: 390, length: 9000, slick: spread(6, 0.12, 0.9),
     pts: [[1400, 400], [2400, 400], [3100, 550, 500], [3400, 1000, 400], [3300, 1400, 160], [3500, 1750, 160], [3400, 2300, 300], [3050, 2650, 250], [2400, 2650], [1900, 2600, 200], [1700, 2300, 200], [1700, 1750, 150], [1450, 1500, 120], [1200, 1750, 150], [1200, 2300, 200], [950, 2650, 200], [500, 2650, 250], [250, 2200, 300], [300, 1500, 300], [600, 1100, 200], [350, 750, 200], [400, 400, 200]],
   },
   {
     name: 'Swamp Realm', hint: 'Mud pools drain your speed. Steer around them.',
     bg: '#2f3b22', road: '#6a6850', edge: '#3c2f1e',
-    grip: 7, drag: 0.6, droneSpeed: 470, length: 9500, mud: spread(7, 0.1, 0.9),
+    grip: 7, drag: 0.6, droneSpeed: 375, length: 9500, mud: spread(7, 0.1, 0.9),
     pts: [[600, 400], [900, 400], [1150, 260, 120], [1400, 400, 120], [1650, 540, 120], [1900, 400, 120], [2600, 400, 300], [3000, 700, 350], [3000, 1200, 200], [2700, 1550, 200], [3000, 1900, 200], [2800, 2300, 250], [2300, 2350, 250], [1800, 2000, 200], [1300, 2350, 200], [800, 2350, 250], [400, 2050, 250], [200, 1500, 300], [500, 1100, 150], [200, 800, 150], [300, 450, 250]],
   },
   {
     name: 'Lava Realm', hint: 'Vents glow, then erupt. Get caught and you spin out.',
     bg: '#2a0d05', road: '#4a3a35', edge: '#ff5a1f',
-    grip: 7, drag: 0.5, droneSpeed: 485, length: 11000, vents: spread(10),
+    grip: 7, drag: 0.5, droneSpeed: 355, length: 11000, vents: spread(10),
     pts: [[1000, 300], [1700, 300], [2900, 300, 250], [3250, 650, 300], [2900, 1000, 250], [2200, 1000], [1900, 880, 120], [1600, 1000, 120], [1100, 1000, 150], [800, 1200, 150], [1100, 1400, 150], [1800, 1400], [2500, 1500, 300], [3000, 1400, 250], [3350, 1750, 250], [3000, 2100, 250], [2000, 2100], [1000, 2200, 400], [300, 2100, 300], [100, 1600, 300], [150, 800, 300], [400, 300, 250]],
   },
   {
     name: 'Storm Realm', hint: 'Wind gusts shove you around. Watch the arrow.',
     bg: '#232836', road: '#4a4f5c', edge: '#c9c94a',
-    grip: 6, drag: 0.5, droneSpeed: 440, length: 12000, wind: 140,
+    grip: 6, drag: 0.5, droneSpeed: 425, length: 12000, wind: 140,
     pts: [[1100, 350], [1800, 300], [3000, 450, 600], [3600, 900, 500], [3700, 1500, 500], [3300, 1950, 300], [2700, 1900, 200], [2400, 1650, 150], [2100, 1900, 200], [1700, 2300, 400], [1100, 2400, 400], [600, 2100, 250], [700, 1600, 250], [300, 1200, 300], [250, 700, 300], [500, 400, 250]],
   },
   {
     name: 'Water Realm', hint: 'Floaty handling. Currents carry you across the road.',
     bg: '#0d3b66', road: '#2b6f99', edge: '#a8e4ff', skid: 'rgba(255,255,255,0.25)',
-    grip: 3, drag: 0.35, droneSpeed: 525, length: 10000, currents: spread(8), currentSpeed: 280,
+    grip: 3, drag: 0.35, droneSpeed: 410, length: 10000, currents: spread(8), currentSpeed: 280,
     pts: [[300, 500], [800, 300], [1300, 550], [1800, 300], [2300, 550], [2800, 300], [3300, 500], [3600, 1000, 350], [3300, 1500], [2800, 1700], [2300, 1500], [1800, 1700], [1300, 1500], [800, 1700], [300, 1500], [100, 1000, 350]],
   },
   {
     name: 'Junk Realm', hint: 'Tight 90-degree corners and scrap you bounce off.',
     bg: '#4a4237', road: '#6b6359', edge: '#c08a3e',
-    grip: 7, drag: 0.5, droneSpeed: 430, length: 10500, junk: 20,
+    grip: 7, drag: 0.5, droneSpeed: 360, length: 10500, junk: 20,
     pts: [[1100, 300], [1800, 300], [2000, 500], [2000, 700], [1800, 900], [1600, 900], [1400, 1100], [1400, 1300], [1600, 1500], [2600, 1500], [2800, 1300], [2800, 700], [3000, 500], [3200, 500], [3400, 700], [3400, 1200], [3250, 1450], [3400, 1700], [3400, 2000], [3200, 2200], [1800, 2300], [500, 2200], [300, 2000], [300, 1200], [300, 500], [500, 300]],
   },
   {
     name: 'Roto Realm', hint: 'Spinning arms bat you away. Time your pass.',
     bg: '#1d2a2a', road: '#3d4f4f', edge: '#38e0c0',
-    grip: 7, drag: 0.5, droneSpeed: 380, length: 10000, spinners: spread(7, 0.1, 0.9),
+    grip: 7, drag: 0.5, droneSpeed: 270, length: 10000, spinners: spread(7, 0.1, 0.9),
     pts: [[1700, 220], [2200, 250], [2900, 600, 400], [3100, 1200, 300], [2800, 1700, 200], [2300, 1600, 150], [2000, 1300, 150], [1600, 1500, 150], [1700, 2000, 200], [2200, 2300, 130], [1600, 2600, 200], [900, 2500, 300], [300, 2000, 300], [200, 1200, 300], [500, 600, 300], [1100, 250, 300]],
   },
   {
     name: 'Cosmo Realm', hint: 'Low drag. Gravity wells drag you in; touch a core and you spin.',
     bg: '#05030f', road: '#1e1640', edge: '#b26bff', skid: 'rgba(178,107,255,0.3)',
-    grip: 4, drag: 0.25, droneSpeed: 580, length: 14000, wells: spread(6, 0.1, 0.88), stars: true,
+    grip: 4, drag: 0.25, droneSpeed: 440, length: 14000, wells: spread(6, 0.1, 0.88), stars: true,
     pts: [[900, 250], [1500, 200], [2300, 450, 150], [2700, 300, 150], [3500, 300, 300], [4100, 700, 500], [4200, 1300, 500], [3800, 1700, 250], [3300, 1500, 150], [2900, 1700, 150], [3300, 2100, 150], [3900, 2300, 300], [4100, 2900, 300], [3500, 3200, 300], [2500, 3100], [1900, 3200, 250], [1300, 3000, 250], [1000, 2500, 250], [1300, 2000, 250], [1900, 1800, 300], [2200, 1300, 200], [1700, 900, 200], [1100, 1100, 300], [600, 1500, 250], [200, 1100, 250], [300, 400, 300]],
   },
 ];
@@ -289,7 +289,7 @@ function startRealm() {
   junk = (realm.junk ? spread(realm.junk) : []).map((f, k) => ({ ...at(f, [-55, 10, 55, -20][k % 4]), r: 22, rot: k * 0.7 }));
   // Offset from center so there is always a gap on one side.
   spinners = (realm.spinners || []).map((f, k) => ({ ...at(f, k % 2 ? 35 : -35), len: 75, ang: k, w: k % 2 ? 2 : -2 }));
-  wells = (realm.wells || []).map((f, k) => ({ ...at(f, k % 2 ? 210 : -210), r: 400, pull: 280, core: 40 }));
+  wells = (realm.wells || []).map((f, k) => ({ ...at(f, k % 2 ? 210 : -210), r: 360, pull: 190, core: 40 }));
   stars = realm.stars
     ? Array.from({ length: 900 }, () => ({
       x: track.minX + Math.random() * (track.maxX - track.minX),
