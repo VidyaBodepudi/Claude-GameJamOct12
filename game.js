@@ -1,5 +1,6 @@
 const CONFIG = {
-  laps: 2,
+  laps: 1,
+  autoAdvance: 3,
   roadHalf: 90,
   carRadius: 17,
   trackSpacing: 50,
@@ -98,7 +99,7 @@ let realmIndex = 0;
 let totalTime = 0;
 let best = loadBest();
 let realm, track, player, drones, pickups, mud, slick, vents, currents, junk, spinners, wells, stars, skids, streaks;
-let wind, time, countdown, lastTick, lapStart, flash, newBest, winner;
+let wind, time, countdown, lastTick, lapStart, flash, newBest, winner, advanceTimer;
 
 function loadBest() {
   try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
@@ -258,14 +259,17 @@ function onKey(code) {
   }
   if (code === 'Enter') {
     if (phase === 'intro') { realmIndex = 0; totalTime = 0; startRealm(); }
-    else if (phase === 'realmWon') {
-      realmIndex++;
-      if (realmIndex >= REALMS.length) finishCampaign();
-      else startRealm();
-    } else if (phase === 'realmLost') startRealm();
+    else if (phase === 'realmWon') nextRealm();
+    else if (phase === 'realmLost') startRealm();
     else if (phase === 'victory') phase = 'intro';
   }
   if (code === 'KeyR' && phase !== 'intro' && phase !== 'victory') startRealm();
+}
+
+function nextRealm() {
+  realmIndex++;
+  if (realmIndex >= REALMS.length) finishCampaign();
+  else startRealm();
 }
 
 function finishCampaign() {
@@ -623,6 +627,11 @@ function update(dt) {
     updateHazards(dt);
     return;
   }
+  if (phase === 'realmWon') {
+    advanceTimer -= dt;
+    if (advanceTimer <= 0) nextRealm();
+    return;
+  }
   if (phase !== 'racing') return;
   time += dt;
   if (flash) { flash.t -= dt; if (flash.t <= 0) flash = null; }
@@ -652,6 +661,7 @@ function update(dt) {
     newBest = !rec.time || time < rec.time;
     if (newBest) { rec.time = time; saveBest(); }
     phase = 'realmWon';
+    advanceTimer = CONFIG.autoAdvance;
     play('win');
   } else if (winner) {
     phase = 'realmLost';
@@ -956,7 +966,7 @@ function draw() {
       ['REALM CORE ACQUIRED', 36, '#39ff88'],
       [`${realm.name} cleared in ${time.toFixed(1)}s`, 20],
       [newBest ? 'NEW BEST TIME!' : '', 20, '#39ff88'],
-      [realmIndex + 1 < REALMS.length ? 'Press Enter for the next realm' : 'Press Enter to finish', 20, '#ffe94a'],
+      [`${realmIndex + 1 < REALMS.length ? 'Next realm' : 'Finishing'} in ${Math.ceil(advanceTimer)}... (Enter to skip)`, 20, '#ffe94a'],
     ]);
   } else if (phase === 'realmLost') {
     overlay([
